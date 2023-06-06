@@ -1,69 +1,35 @@
-# This file is somewhat hackish for now, will refactor later
+import warnings
+warnings.filterwarnings("ignore")
 
-import os,sys
-
-
-import numpy as np
-from skimage import color
-import numpy as np
-import tensorflow as tf # just for DeepMind's dataset
 import torch
+import argparse 
+import datetime
+import time
+import sys
 
-import torchvision
-import torch_sparse
-import torch_scatter
-import torch_sparse
-import torch_geometric
-from torch_geometric.utils import to_dense_batch
+from datasets import *
+
+from config import *
+from models import *
+from visualize.answer_distribution import *
 
 from torch.utils.tensorboard import SummaryWriter
+import torchvision
+from skimage import color
 
-import matplotlib.pyplot as plt
-from psgnet import *
-import datasets
-
-tf_records_path = '/Users/melkor/Documents/datasets/objects_room_train.tfrecords'
-
-batch_size = 1
-imsize     = 128
-
-model_name = "toy128_level3"
-
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
-# Create train dataloader 
+from legacy import *
 
 
-dataset = datasets.Clevr4()
-dataset = datasets.BattlecodeImageData()
-dataset = datasets.SpriteData()
-dataset = datasets.MixSpriteData()
+def freeze_parameters(model):
+    for param in model.parameters():
+        param.requires_grad = False
+def unfreeze_parameters(model):
+    for param in model.parameters():
+        param.requires_grad = True
 
-dataset1 = datasets.MineClip()
-dataset2 = datasets.MineOut()
-dataset3 = datasets.MineCrazy()
+def log_imgs(imsize,pred_img,clusters,gt_img,writer,iter_):
 
-
-dataset = torch.utils.data.ConcatDataset([dataset1,dataset2,dataset3])
-#dataset = datasets.SpriteData()
-dataset = datasets.ToyData("train")
-#dataset = datasets.PTRData("train")
-train_dataloader = torch.utils.data.DataLoader(dataset,batch_size = batch_size, shuffle = True)
-
-#dataset = datasets.dataset(tf_records_path, 'train')
-#train_dataloader = dataset.batch(batch_size)
-
-# Should move these two functions below to another file
-
-# From SRN utils, just formats a flattened image for image writing
-def lin2img(tensor):
-    batch_size, num_samples, channels = tensor.shape
-    sidelen = np.sqrt(num_samples).astype(int)
-    return tensor.permute(0,2,1).view(batch_size, channels, sidelen, sidelen)
-
-# Takes the pred img and clusters produced and writes them to a TF writer
-
-def log_imgs(pred_img,clusters,gt_img,iter_):
+    batch_size = pred_img.shape[0]
     
     # Write grid of output vs gt 
     grid = torchvision.utils.make_grid(
@@ -84,133 +50,249 @@ def log_imgs(pred_img,clusters,gt_img,iter_):
     writer.add_image("Clusters",grid2.detach().numpy(),iter_)
     writer.add_image("Output_vs_GT",grid.detach().numpy(),iter_)
     writer.add_image("Output_vs_GT Var",grid.detach().numpy(),iter_)
+
+    visualize_image_grid(cluster_imgs[batch_size,...], row = 1, save_name = "val_cluster")
+    visualize_image_grid(pred_img.reshape(batch_size,imsize,imsize,3)[0,...], row = 1, save_name = "val_recon")
+
+
+
+def train_Valkyr(train_model, config, args):
+
+    query = True if args.training_mode in ["joint", "query"] else False
+    print("\nstart the experiment: {} query:[{}]".format(args.name,query))
+    print("experiment config: \nepoch: {} \nbatch: {} samples \nlr: {}\n".format(args.epoch,args.batch_size,args.lr))
+    
+    #[setup the training and validation dataset]
+    if args.dataset == "ptr":
+        train_dataset = PTRData("train", resolution = config.resolution)
+        val_dataset =  PTRData("val", resolution = config.resolution)
+    if args.dataset == "toy":
+        if query:
+            train_dataset = ToyDataWithQuestions("train", resolution = config.resolution)
+        else:
+            train_dataset = ToyData("train", resolution = config.resolution)
+    if args.dataset == "Acherus":
+        if query:
+            print("Elbon Blade Crusade for You")
+            train_dataset = AcherusDataset("train")
+        else:
+            train_dataset = AcherusImageDataset("train")
+    if args.training_mode == "query":
+        freeze_parameters(train_model.scene_perception.backbone)
+
+    dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = args.shuffle)
+
+    # [joint training of perception and language]
+    alpha = args.alpha
+    beta  = args.beta
+    if args.training_mode == "query":alpha = 0
+    if args.training_mode == "perception":beta = 0
     
 
-from torch_sparse import SparseTensor
-from torch_scatter import scatter_max
+    # [setup the optimizer and lr schedulr]
+    if args.optimizer == "Adam":
+        optimizer = torch.optim.Adam(train_model.parameters(), lr = args.lr)
+    if args.optimizer == "RMSprop":
+        optimizer = torch.optim.RMSprop(train_model.parameters(), lr = args.lr)
+
+    # [start the training process recording]
+    itrs = 0
+    start = time.time()
+    logging_root = "./logs"
+    ckpt_dir     = os.path.join(logging_root, 'checkpoints')
+    events_dir   = os.path.join(logging_root, 'events')
+    if not os.path.exists(ckpt_dir): os.makedirs(ckpt_dir)
+    if not os.path.exists(events_dir): os.makedirs(events_dir)
+    writer = SummaryWriter(events_dir)
+
+    for epoch in range(args.epoch):
+        epoch_loss = 0
+        for sample in dataloader:
+            
+            # [perception module training]
+            gt_ims = torch.tensor(sample["image"].numpy()).float().to(config.device)
+
+            outputs = model.scene_perception(gt_ims)
+
+            # get the components
+            recons, clusters, all_losses = outputs["recons"],outputs["clusters"],outputs["losses"]
+            
+            masks    = outputs["abstract_scene"][-1]["masks"].permute([0,3,1,2]).unsqueeze(-1)
+            scores   = outputs["abstract_scene"][-1]["scores"][0,...] - EPS
+            scores   = torch.clamp(scores, min = EPS, max = 1)
+            #print(scores)
+
+            perception_loss = 0
 
 
+            for i,pred_img in enumerate(recons[:]):
+                perception_loss += torch.nn.functional.l1_loss(pred_img.flatten(), gt_ims.flatten())
 
-# Create model
+            # [language query module training]
+            language_loss = 0
 
-try:
-    model = torch.load("checkpoints/{}.ckpt".format(model_name),map_location = device)
-    print("QTR Model Loaded from ckpt")
-    #model = PSGNet(imsize)
-except:
-    print("checkpoint is not found, creating a new instance")
-    model = PSGNet(imsize)
+            if query:
+                for question in sample["question"]:
+                    for b in range(len(question["program"])):
+                        program = question["program"][b] # string program
+                        answer  = question["answer"][b]  # string answer
 
-model = model.to(device)
-model.device = device
+                        abstract_scene  = outputs["abstract_scene"]
+                        top_level_scene = abstract_scene[-1]
 
-optimizer = torch.optim.Adam(model.parameters(), lr=2e-4)
- 
-# Logs/checkpoint paths
+                        working_scene = [top_level_scene]
 
-logging_root = "./logs"
-ckpt_dir     = os.path.join(logging_root, 'checkpoints')
-events_dir   = os.path.join(logging_root, 'events')
-if not os.path.exists(ckpt_dir): os.makedirs(ckpt_dir)
-if not os.path.exists(events_dir): os.makedirs(events_dir)
+                        scores   = top_level_scene["scores"][b,...] - EPS
+                        scores   = torch.clamp(scores, min = EPS, max = 1).reshape([-1])
 
-checkpoint_path = None
-if checkpoint_path is not None:
-    print("Loading model from %s" % checkpoint_path)
-    model.load_state_dict(torch.load(checkpoint_path))
-    
-writer = SummaryWriter(events_dir)
-iter_  = 0
-epoch  = 0
-steps_til_ckpt = 1000
+                        #scores = scores.unsqueeze(0)
 
-# Training loop
-
-im_loss_weight = 100
-loss_history = []
-
-#writer.add_graph(model,torch.randn(2,imsize,imsize,3).float())
-
-while True:
-    for model_input in train_dataloader:
-        
-          gt_img = torch.tensor(model_input["image"].numpy()).float().to(device)/255
+                        features = top_level_scene["features"][b].reshape([scores.shape[0],-1])
 
 
-          optimizer.zero_grad()
+                        edge = 1e-6
+                        if config.concept_type == "box":
+                            features = torch.cat([features,edge * torch.ones(features.shape)],-1)#.unsqueeze(0)
 
-        #try:
-          outputs = model(gt_img)
+                        kwargs = {"features":features,
+                                  "end":scores }
 
-          recons, clusters, all_losses = outputs["recons"],outputs["clusters"],outputs["losses"]
+                        q = train_model.executor.parse(program)
+                        
+                        o = train_model.executor(q, **kwargs)
+                        #print("Batch:{}".format(b),q,o["end"],answer)
+                        
+                        if answer in numbers:
+                            int_num = torch.tensor(numbers.index(answer)).float().to(args.device)
+                            language_loss += F.mse_loss(int_num + 1,o["end"])
+                            if itrs % args.checkpoint_itrs == 0:
+                                print(q,answer)
+                                visualize_scores(scores.reshape([args.batch_size,-1,1]).detach())
+                                answer_distribution_num(o["end"].cpu().detach().numpy(),1+int_num.cpu().detach().numpy())
+                        if answer in yes_or_no:
+                            if answer == "yes":language_loss -= torch.log(torch.sigmoid(o["end"]))
+                            else:language_loss -= torch.log(1 - torch.sigmoid(o["end"]))
+                            if itrs % args.checkpoint_itrs == 0:
+                                print(q,answer)
+                                print(torch.sigmoid(o["end"]).cpu().detach().numpy())
+                                visualize_scores(scores.reshape([args.batch_size,-1,1]).detach())
+                                answer_distribution_binary(torch.sigmoid(o["end"]).cpu().detach().numpy())
+            # [calculate the working loss]
+            working_loss = perception_loss * alpha + language_loss * beta
+            epoch_loss += working_loss.detach().numpy()
 
-          img_loss = 0 
+            # [backprop and optimize parameters]
+            for i,losses in enumerate(all_losses):
+                for loss_name,loss in losses.items():
+                    writer.add_scalar(str(i)+loss_name, loss, itrs)
 
-          for i,pred_img in enumerate(recons[:]):
-              img_loss += torch.nn.functional.l1_loss(pred_img.flatten(), gt_img.flatten())
+            optimizer.zero_grad()
+            working_loss.backward()
+            optimizer.step()
 
-          pred_img = recons[-1]
+            writer.add_scalar("working_loss", working_loss, itrs)
+            writer.add_scalar("perception_loss", perception_loss, itrs)
+            writer.add_scalar("language_loss", language_loss, itrs)
 
-          all_losses.append({"img_loss" : im_loss_weight*img_loss})
+            if not(itrs % args.checkpoint_itrs):
+                name = args.name
+                expr = args.training_mode
+                num_slots = masks.shape[1]
+                torch.save(train_model, "checkpoints/{}_{}_{}_{}.ckpt".format(name,expr,config.domain,config.perception))
+                log_imgs(config.imsize,pred_img.cpu().detach(), clusters, gt_ims.reshape([args.batch_size,config.imsize ** 2,3]).cpu().detach(),writer,itrs)
+                
+                visualize_image_grid(gt_ims.flatten(start_dim = 0, end_dim = 1).cpu().detach(), row = args.batch_size, save_name = "ptr_gt_perception")
+                visualize_image_grid(gt_ims[0].cpu().detach(), row = 1, save_name = "val_gt_image")
 
-          total_loss = 0
-          for i,losses in enumerate(all_losses):
-              for loss_name,loss in losses.items():
-                  total_loss += loss
-                  writer.add_scalar(str(i)+loss_name, loss, iter_)
-          writer.add_scalar("total_loss", total_loss, iter_)
+                
+                single_comps =  torchvision.utils.make_grid((masks*gt_ims)[0:1].cpu().detach().permute([0,1,4,2,3]).flatten(start_dim = 0, end_dim = 1),normalize=True,nrow=num_slots).permute(1,2,0)
+                visualize_image_grid(single_comps.cpu().detach(), row = 1, save_name = "slot_masks")
+                #visualize_psg(gt_ims[0:1].cpu().detach(), outputs["abstract_scene"], args.effective_level)
 
-          total_loss.backward()
-        
-          if iter_ % 10 == 0:
-              torch.save(model,"checkpoints/{}.ckpt".format(model_name))
-              log_imgs(pred_img.cpu().detach(), clusters, gt_img.reshape([batch_size,imsize ** 2,3]).cpu().detach(),iter_)
+            itrs += 1
+
+            sys.stdout.write ("\rEpoch: {}, Itrs: {} Loss: {} Percept:{} Language:{}, Time: {}".format(epoch + 1, itrs, working_loss,perception_loss,language_loss,datetime.timedelta(seconds=time.time() - start)))
+        writer.add_scalar("epoch_loss", epoch_loss, epoch)
+    print("\n\nExperiment {} : Training Completed.".format(args.name))
 
 
+argparser = argparse.ArgumentParser()
+# [general config of the training]
+argparser.add_argument("--device",                  default = config.device)
+argparser.add_argument("--name",                    default = "KFT")
+argparser.add_argument("--epoch",                   default = 400)
+argparser.add_argument("--optimizer",               default = "Adam")
+argparser.add_argument("--lr",                      default = 2e-4)
+argparser.add_argument("--batch_size",              default = 1)
+argparser.add_argument("--dataset",                 default = "toy")
 
-              plt.figure("Level Recons vs GT Img")
-              recon_num = len(recons)
-              for i in range(recon_num):
-                  recon_batch = recons[i].reshape([batch_size,imsize,imsize,3]).detach()
+# [perception and language grounding training]
+argparser.add_argument("--training_mode",           default = "joint")
+argparser.add_argument("--alpha",                   default = 10.00)
+argparser.add_argument("--beta",                    default = 0.001)
 
-                  for j in range(batch_size):
+# [additional training details]
+argparser.add_argument("--warmup",                  default = True)
+argparser.add_argument("--warmup_steps",            default = 100)
+argparser.add_argument("--decay",                   default = False)
+argparser.add_argument("--decay_steps",             default = 20000)
+argparser.add_argument("--decay_rate",              default = 0.99)
+argparser.add_argument("--shuffle",                 default = True)
 
-                      plt.subplot(recon_num+ 1,batch_size,j + 1 + i * batch_size)
-                      plt.tick_params(left = False, right = False , labelleft = False ,
-                      labelbottom = False, bottom = False)
-                      plt.imshow(recon_batch[j].cpu().detach())
-              gt_batch = gt_img.reshape(batch_size,imsize,imsize,3)
-              for k in range(batch_size):
-                  plt.subplot(len(recons) + 1,batch_size, 1 + k + (len(recons)) * batch_size)
-                  plt.tick_params(left = False, right = False , labelleft = False ,
-                  labelbottom = False, bottom = False)
-                  plt.imshow(gt_batch[k].cpu().detach())
-              plt.pause(0.001)
-              plt.figure("Connected")
+# [curriculum training details]
+argparser.add_argument("--effective_level",         default = 1)
 
-              levels = outputs["levels"]
-              for i,level in enumerate(levels):
-                    plt.subplot(2,len(levels),i + 1)
-                    plt.tick_params(left = False, right = False , labelleft = False ,
-                      labelbottom = False, bottom = False)
-                    plt.cla()
-                    plt.imshow(level.clusters.reshape([imsize,imsize]).detach())
-                    #render_level(level,"Namo",scale = imsize)
+# [checkpoint location and savings]
+argparser.add_argument("--checkpoint_dir",          default = False)
+argparser.add_argument("--checkpoint_itrs",         default = 50)
+argparser.add_argument("--pretrain_perception",     default = False)
 
-                    plt.subplot(2,len(levels),i+1 + len(levels))
-                    plt.tick_params(left = False, right = False , labelleft = False ,
-                      labelbottom = False, bottom = False)
-                    plt.cla()
-                    plt.imshow(recons[i].reshape([imsize,imsize,3]).detach())
-                    render_level(level,"Namo",scale = imsize)
-                    
-              plt.pause(0.0001)
+args = argparser.parse_args()
 
-          optimizer.step()
-          sys.stdout.write("\rIter %07d Epoch %03d   L_img %0.4f " %
-                          (iter_, epoch, img_loss))
+if args.checkpoint_dir:
+    model = torch.load(args.checkpoint_dir, map_location = config.device)
+else:
+    print("No checkpoint to load and creating a new model instance")
+    if args.name == "TBC":
+        config.perception = "slot_attention"
+        model = SceneLearner(config)
+    if args.name == "Acherus":
+        config.perception = "psgnet"
+        model = SceneLearner(config)
+    if args.name == "Elbon" or "PTR":
+        config.domain = "toy"
+        print("Elbon Blade Training Set")
+        config.perception = "psgnet"
+        args.dataset = "Elbon"
+        model = SceneLearner(config)
+    if args.name == "Valkyr":
+        config.perception = "local_psgnet"
+        args.dataset = "Elbon"
+        print("Init the Local Scene Graph Net")
+        model = SceneLearner(config)
 
-          iter_ += 1
-        
+if args.pretrain_perception:
+    model.scene_perception = torch.load(args.pretrain_perception, map_location = config.device)
 
-    epoch += 1
+#model = torch.load("checkpoints/TBC_joint_toy_slot_attention.ckpt", map_location=args.device)
+#model.scene_perception.slot_attention.iters = 10
+
+if args.name == "Valkyr":
+    print("Val'kyr start the training session.")
+    args.dataset = "Acherus"
+    train_Valkyr(model, config, args)
+
+if args.name == "TBC":
+    train_TBC(model, config, args)
+elif args.name == "Acherus":
+    print("Assault on New Avalon")
+    config.perception = "psgnet"
+    train_Archerus(model, config, args)
+elif args.name == "Elbon" or "PTR":
+    print("The Elbon Blade")
+    args.dataset = "toy"
+    if args.name == "PTR":
+        args.dataset = "ptr"
+    config.perception = "psgnet"
+    train_Archerus(model, config, args)
+

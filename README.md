@@ -1,3 +1,10 @@
+# Hierarchical Scene Graph Learner
+ Grounding Visual Hierarchy using Natural Language
+
+This repo is the Hierarchical Concept Learner
+
+![](src/framework.png)
+
 # Physical Scene Graph Network
 This repo is trying to reproduce the project "Learning Physical Graph Representations from Visual Scenes". Apply Gestalt principles in unsupervised 
 visual scene understanding.

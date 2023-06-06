@@ -1,0 +1,1 @@
+/Users/melkor/miniforge3/envs/Melkor/bin/python train.py --name="TBC" --training_mode="joint" --pretrain_perception="checkpoints/TBC_joint_toy_slot_attention.ckpt"

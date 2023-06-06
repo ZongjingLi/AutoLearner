@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            grid-template-columns: 4;
+        }
+        .grid-3col {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        align-items:center;
+        }
+
+        .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        align-content: center;
+        margin-bottom: 2%;
+        }
+        .frostmourn-card .img {
+            width:200px;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 
+                2fr 4fr 1fr;
+        }
+        .top-bar {
+            display: grid;
+            grid-template-rows: 1fr 4fr;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        top-bar
+    </div>
+    <main>
+        <div class="side">
+            SideBar
+        </div>
+        <div class="cards">
+            <div class="grid-3col">
+                <div class="frostmourn-card">
+                    <img src="assets/frostmourn.png" width="200px">
+                </div>
+                <div class="frostmourn-card">
+                    <img src="assets/frostmourn.png" width="200px">
+                </div>
+                <div class="frostmourn-card">
+                    <img src="assets/frostmourn.png" width="200px">
+                </div>
+                <div class="frostmourn-card">
+                    <img src="assets/frostmourn.png" width="200px">
+                </div>
+            </div>
+        </div>
+        <div class="right-bar">
+            RightBar
+        </div>
+    </main>
+</body>
+</html>
