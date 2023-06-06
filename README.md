@@ -9,6 +9,9 @@ This repo is the Hierarchical Concept Learner
 In this work, we design an constructive environment for our agent to percept, explore and interact. The following section is about the specific design of this environment, including the type of objects appeared in the domain, their visual(color, material) and physical(mass, friction) properties.
 namomo找不到合适的环境捏,自己捏一个环境吧.
 
+# Concept Structure
+In this project, we use different kind of concept representations. We evaluate these concept predicates on the scene tree extracted in the perception model to get each nodes' attributes. For example, a node that represents a red ball should have attributes like $Pr[Red|e] = 1.0,Pr[Ball|e] = 1.0$
+
 # Physical Scene Graph Network
 This repo is trying to reproduce the project "Learning Physical Graph Representations from Visual Scenes". Apply Gestalt principles in unsupervised 
 visual scene understanding.
