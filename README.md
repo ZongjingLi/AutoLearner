@@ -10,7 +10,7 @@ In this work, we design an constructive environment for our agent to percept, ex
 
 ## Objects
 ### Primary Blocks
-
+![](src/blocks.png)
 
 ### Compositional Blocks
 
