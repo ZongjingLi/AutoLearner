@@ -7,6 +7,13 @@ This repo is the Hierarchical Concept Learner
 
 # Domain Design
 In this work, we design an constructive environment for our agent to percept, explore and interact. The following section is about the specific design of this environment, including the type of objects appeared in the domain, their visual(color, material) and physical(mass, friction) properties.
+
+## Objects
+### Primary Blocks
+
+
+### Compositional Blocks
+
 namomo找不到合适的环境捏,自己捏一个环境吧.
 
 # Concept Structure
