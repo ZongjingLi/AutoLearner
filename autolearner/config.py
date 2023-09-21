@@ -15,6 +15,7 @@ parser.add_argument("--name",                       default = "AutoLearner")
 
 # [Knowledge]
 parser.add_argument("--object_dim",                 default = 100)
+parser.add_argument("--concept_dim",                default = 100)
 
 # [Perception]
 parser.add_argument("--channels",                   default = 3)
@@ -28,4 +29,4 @@ parser.add_argument("--spatial_dim",                default = 2)
 # [Reasoning]
 
 
-config = parser.parse_args()
+config = parser.parse_args(args = [])
