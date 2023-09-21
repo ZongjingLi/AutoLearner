@@ -6,7 +6,7 @@ class SceneNet(nn.Module):
     def __init__(self, config):
         super().__init__()
         # [Convolutional Bakcbone]
-        self.convs_backbone = ConvolutionUnits(config.input_channels,config.conv_dim, config.latent_dim)
+        self.convs_backbone = ConvolutionUnits(config.channels,config.conv_dim, config.latent_dim)
 
     def forward(self, x):
         return x
