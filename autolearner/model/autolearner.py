@@ -1,5 +1,8 @@
 from Karanir import *
-
+from .perception import *
+from .knowledge import *
+from .physics import *
+from .reason import *
 
 class AutoLearner(nn.Module):
     def __init__(self, config):
@@ -10,10 +13,11 @@ class AutoLearner(nn.Module):
         # [Knowledge]
 
         # [Perception]
+        self.perception = SceneNet(config)
 
         # [Physics]
 
-        # [Planning]
+        # [Reasoning and Planning]
     
     def forward(self, x):
         return x

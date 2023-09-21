@@ -49,7 +49,7 @@ def train_scenelearner(train_model, config, args, query = False):
     if not os.path.exists(events_dir): os.makedirs(events_dir)
     writer = SummaryWriter(events_dir)
 
-    for epoch in range(config.epochs):
+    for epoch in range(args.epochs):
         pass
 
 def train_physics(model, config, args):

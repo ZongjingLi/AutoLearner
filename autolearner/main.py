@@ -36,6 +36,8 @@ argparser.add_argument("--shuffle",                 default = True)
 argparser.add_argument("--checkpoint_dir",          default = None)
 
 args = argparser.parse_args()
+args.batch_size = int(args.batch_size)
+args.lr = float(args.lr)
 
 model = AutoLearner(config)
 
