@@ -5,8 +5,9 @@ from train import *
 weights = {"reconstruction":1.0,"color_reconstruction":1.0,"occ_reconstruction":1.0,"localization":1.0,"chamfer":1.0,"equillibrium_loss":1.0}
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("--mode",        default = "scenelearner")
-argparser.add_argument("--epochs",      default = 1132)
+argparser.add_argument("--name",                    default = "WLK")
+argparser.add_argument("--mode",                    default = "scenelearner")
+argparser.add_argument("--epochs",                  default = 1132)
 argparser.add_argument("--optimizer",               default = "Adam")
 argparser.add_argument("--lr",                      default = 1e-3)
 argparser.add_argument("--batch_size",              default = 1)
@@ -30,6 +31,9 @@ argparser.add_argument("--decay",                   default = False)
 argparser.add_argument("--decay_steps",             default = 20000)
 argparser.add_argument("--decay_rate",              default = 0.99)
 argparser.add_argument("--shuffle",                 default = True)
+
+# [checkpoint details]
+argparser.add_argument("--checkpoint_dir",          default = None)
 
 args = argparser.parse_args()
 
