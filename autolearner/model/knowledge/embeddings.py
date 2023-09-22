@@ -37,7 +37,7 @@ class BoxRegistry(nn.Module):
 
     def __getitem__(self, key, item): self.boxes.weight[key] = item
 
-    def __getitem__(self, key):return self.boxes.weight[key]
+    def __getitem__(self, key):return torch.tanh(self.boxes.weight[key])*0.25
 
     @property
     def device(self):return self.boxes.weight.device
@@ -61,7 +61,7 @@ class PlaneRegistry(nn.Module):
             self.planes.weight.abs_()
 
     def forward(self, x):
-        return self.planes(x)
+        return torch.tanh(self.planes(x) ) * 0.25
 
     def __setitem__(self, key, item):
         self.planes.weight[key] = item
@@ -104,7 +104,7 @@ class ConeRegistry(nn.Module):
         self.cones.weight[key] = item
 
     def __getitem__(self, key):
-        return self.cones.weight[key]
+        return torch.tanh(self.cones.weight[key]) * 0.5
 
     def clamp_dimensions(self):
         with torch.no_grad():

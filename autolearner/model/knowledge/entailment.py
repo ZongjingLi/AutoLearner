@@ -20,7 +20,7 @@ class PlaneEntailment(nn.Module, metaclass = Singleton):
 
     def __init__(self, config):
         super().__init__()
-        self.margin = 0.2
+        self.margin = .2
 
     def forward(self, premise, consequence):
         logit_pr = (premise * consequence - self.margin).mean(-1).clamp(-1, 1) * 8.
