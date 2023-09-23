@@ -5,7 +5,7 @@ from datasets import *
 demoparser = argparse.ArgumentParser()
 demoparser.add_argument("--demo_name",          default = "knowledge")
 demoparser.add_argument("--concept_dim",        default = 2)
-demoparser.add_argument("--concept_type",       default = "box")
+demoparser.add_argument("--concept_type",       default = "plane")
 demoparser.add_argument("--demo_epochs",        default = 113200)
 
 democonfig = demoparser.parse_args()
@@ -16,25 +16,29 @@ if democonfig.demo_name == "knowledge":
     executor = SceneProgramExecutor(config)
     p = "exist(filter(scene(),red))"
     q = executor.parse(p)
-    EPS = 1e-4
+    EPS = 1e-8
 
     if config.concept_type == "box":
-        features = torch.tensor([
+        features = [torch.tensor([
             [0.4,-0.3,EPS,EPS],
-            #[0.3,0.3,EPS,EPS],
-        ])
+            [0.3,0.3,EPS,EPS],
+        ])]
+        r = 0.5
     if config.concept_type == "plane":
-        features = torch.tensor([
+        features = [torch.tensor([
             [0.4,-0.3],
             [0.3,0.4],
-        ])
+        ])]
+        r = 1.0
     if config.concept_type == "cone":
-        features = torch.tensor([
+        features = [torch.tensor([
             [0.4,-.0],
             [0.0,.3],
-        ])
+        ])]
+        #features = nn.functional.normalize(features, p = 2)
+        r = 1.0
 
-    kwargs = {"end":torch.ones(features.shape[0]),
+    kwargs = {"end":[torch.ones(feat.shape[0]) for feat in features],
              "features":features}
     o = executor(q, **kwargs)
     print(o["end"])
@@ -44,12 +48,11 @@ if democonfig.demo_name == "knowledge":
 
     statements_answers = [
         ("exist(filter(scene(),red))","yes"),
-        #("exist(filter(scene(),green))","yes"),
+        ("exist(filter(scene(),green))","yes"),
 
-        #("exist(filter(filter(scene(),green),red))","no"),
+        ("exist(filter(filter(scene(),green),red))","no"),
         #("exist(filter(filter(scene(),cyan),cone))","no"),
     ]
-    r = 0.5
     if democonfig.concept_dim == 2:
         plt.figure("visualize knowledge", figsize=(6,6))
         plt.xlim(-r,r)
@@ -77,14 +80,17 @@ if democonfig.demo_name == "knowledge":
                         corner[1],corner[1],top[1],top[1],corner[1]
                     ], color="red")
                     #plt.plot([corner[0],top[0]],[corner[1],top[1]])
-                for feat in features:
-                    plt.scatter(feat[0],feat[1],color="blue")
+                for level in features:
+                    for feat in level:
+                        plt.scatter(feat[0],feat[1],color="blue")
                 if config.concept_type == "plane":
                     center = concept_embs[i][0][:2]
                     plt.text(center[0], center[1], concept)
+                    plt.scatter(center[0], center[1], color="cyan")
                 if config.concept_type == "cone":
                     center = concept_embs[i][0][:2]
                     plt.text(center[0], center[1], concept)
+                    plt.scatter(center[0], center[1], color="cyan")
                 
                 
             # [Calculate Regular]

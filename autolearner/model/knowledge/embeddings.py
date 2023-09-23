@@ -27,7 +27,9 @@ class BoxRegistry(nn.Module):
         return nn.Embedding(entries, self.dim * 2, _weight=torch.cat([center, offset], dim=1))
     
     def forward(self, x):
-        return torch.tanh( self.boxes(x) ) * 0.25
+        embs = self.boxes(x)
+        return torch.cat( [torch.tanh(embs[:,:self.dim]) * 0.5,\
+                           torch.sigmoid(embs[:,:self.dim:]) * 0.5 ], dim = -1 )
 
 
     def clamp_dimensions(self):
@@ -61,7 +63,7 @@ class PlaneRegistry(nn.Module):
             self.planes.weight.abs_()
 
     def forward(self, x):
-        return torch.tanh(self.planes(x) ) * 0.25
+        return torch.tanh(self.planes(x) ) * 0.5
 
     def __setitem__(self, key, item):
         self.planes.weight[key] = item
@@ -98,7 +100,7 @@ class ConeRegistry(nn.Module):
         return nn.Embedding(entries, self.dim, _weight=weight)
 
     def forward(self, x):
-        return self.cones(x)
+        return torch.tanh(self.cones(x)) 
 
     def __setitem__(self, key, item):
         self.cones.weight[key] = item

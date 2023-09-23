@@ -103,7 +103,7 @@ class Scene(SymbolicProgram):
         super().__init__(*args)
 
     def __call__(self,executor):
-        EPS = 1e-7
+        EPS = 1e-8
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
         features = executor.kwargs["features"]
         #logit = torch.ones(features.shape[0] ,device = features.device) * self.BIG_NUMBER
@@ -153,7 +153,8 @@ class Filter(SymbolicProgram):
                 mask_value = torch.min(child["end"][i],executor.entailment(features,
                 executor.get_concept_embedding(self.concept)))
             else:            
-                mask_value = self.get_normalized_prob(child["end"][i],features,self.concept,executor)
+
+                mask_value = self.get_normalized_prob(features,self.concept,executor)
 
                 mask_value = mask_value.clamp(EPS, 1-EPS)
 
@@ -161,22 +162,24 @@ class Filter(SymbolicProgram):
                 mask_value = torch.min(child["end"][i], mask_value)
 
             level_mask.append(mask_value)
-
+            #print(torch.cat(level_mask, dim = -1))
             tree_masks.append(torch.cat(level_mask, dim = -1))
+       
    
         return {**child, "end": tree_masks, 
             "feature": executor.kwargs["features"],} #"query_object": query_object}
 
-    def get_normalized_prob(self, end, feat, concept, executor):
+    def get_normalized_prob(self, feat, concept, executor):
         pdf = []
+
         for predicate in executor.concept_vocab:
             pdf.append(torch.sigmoid(executor.entailment(feat,
                 executor.get_concept_embedding(predicate) )).unsqueeze(0) )
-        
+  
         pdf = torch.cat(pdf, dim = 0)
         idx = executor.concept_vocab.index(concept)
 
-        return pdf[idx]/ pdf.sum(dim = 0)
+        return pdf[idx]#/ pdf.sum(dim = 0)
 
 
 
