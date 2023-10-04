@@ -5,8 +5,9 @@ from datasets import *
 demoparser = argparse.ArgumentParser()
 demoparser.add_argument("--demo_name",          default = "knowledge")
 demoparser.add_argument("--concept_dim",        default = 2)
-demoparser.add_argument("--concept_type",       default = "plane")
+demoparser.add_argument("--concept_type",       default = "box")
 demoparser.add_argument("--demo_epochs",        default = 113200)
+
 
 democonfig = demoparser.parse_args()
 config.concept_dim = democonfig.concept_dim
@@ -16,12 +17,12 @@ if democonfig.demo_name == "knowledge":
     executor = SceneProgramExecutor(config)
     p = "exist(filter(scene(),red))"
     q = executor.parse(p)
-    EPS = 1e-8
+    EPS = 1e-6
 
     if config.concept_type == "box":
         features = [torch.tensor([
-            [0.4,-0.3,EPS,EPS],
-            [0.3,0.3,EPS,EPS],
+            [0.4,-0.4,EPS,EPS],
+            [0.3,0.4,EPS,EPS],
         ])]
         r = 0.5
     if config.concept_type == "plane":
@@ -44,12 +45,11 @@ if democonfig.demo_name == "knowledge":
     print(o["end"])
 
     params = executor.parameters()
-    optimizer = torch.optim.Adam(params, lr = 1e-2)
+    optimizer = torch.optim.Adam(params, lr = 1e-3)
 
     statements_answers = [
         ("exist(filter(scene(),red))","yes"),
         ("exist(filter(scene(),green))","yes"),
-
         ("exist(filter(filter(scene(),green),red))","no"),
         #("exist(filter(filter(scene(),cyan),cone))","no"),
     ]

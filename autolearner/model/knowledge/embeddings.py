@@ -28,6 +28,7 @@ class BoxRegistry(nn.Module):
     
     def forward(self, x):
         embs = self.boxes(x)
+        return embs
         return torch.cat( [torch.tanh(embs[:,:self.dim]) * 0.5,\
                            torch.sigmoid(embs[:,:self.dim:]) * 0.5 ], dim = -1 )
 
