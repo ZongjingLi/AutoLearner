@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-05 07:09:56
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-05 11:29:41
+# @Last Modified time: 2023-10-05 13:07:28
 
 import torch
 import torch.nn as nn
@@ -10,10 +10,12 @@ import torch.nn as nn
 from karanir.dklearn.nn import FCBlock
 from karanir.utils import save_json
 
+
 import matplotlib.pyplot as plt
 
 from autolearner.datasets import SpriteWithQuestions
 from torch.utils.data import DataLoader
+from karanir.utils.tokens import *
 
 data = SpriteWithQuestions(split = "train")
 loader = DataLoader(data, batch_size = 1)
@@ -27,8 +29,6 @@ for sample in loader:
 	break
 
 print(im.shape)
-
-
 
 from PIL import Image
 plt.figure(frameon = False)
