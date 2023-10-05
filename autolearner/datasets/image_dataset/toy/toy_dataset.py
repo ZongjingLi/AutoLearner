@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 from PIL import Image
-from Karanir.utils import *
+from karanir.utils import *
 
 
 root = "/Users/melkor/Documents/datasets/"

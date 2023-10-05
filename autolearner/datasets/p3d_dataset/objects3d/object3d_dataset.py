@@ -1,7 +1,7 @@
 import torch
 from scipy.spatial.transform import Rotation
 from torch.utils.data import Dataset
-from Karanir.utils import geometry
+from karanir.utils import geometry
 
 import numpy as np
 import random

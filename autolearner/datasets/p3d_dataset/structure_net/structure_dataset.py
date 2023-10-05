@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 
 from torch.utils.data import Dataset, DataLoader
-from Karanir.utils import load_json
+from karanir.utils import load_json
 import networkx as nx
 
 class StructureDataset(Dataset):

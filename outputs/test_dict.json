@@ -1,1 +1,1 @@
-{"A": 1, "Z": 26, "question": "what is the color of the chair?"}
+[{"program": ["exist(filter(scene(),Circle))"], "answer": ["False"]}, {"program": ["exist(filter(scene(),Cube))"], "answer": ["True"]}, {"program": ["exist(filter(scene(),Diamond))"], "answer": ["True"]}, {"program": ["count(scene())"], "answer": ["2"]}]
