@@ -1,4 +1,4 @@
-from Karanir import *
+from karanir import *
 import torch
 from torch import nn
 

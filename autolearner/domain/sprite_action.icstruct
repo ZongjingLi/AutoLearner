@@ -1,0 +1,39 @@
+(define
+(domain Sprites)
+
+(:types
+	robot item - object
+)
+
+(:predicate
+	(image [return_type=vector[float32], input] ?o1 - item)
+)
+
+(:derived
+	(color [return_type=vector[float32]] ?o1 -item)
+	(??f (image ?o1))
+)
+
+(:action move-into
+ :parameters (?o1 ?o2)
+ :effects (
+ 	and
+ 	(pose::assign
+ 		?o1
+ 		(??f (pose: ?o2))
+ 	)
+ 	(when
+ 		(??g
+ 			(type ?o1)
+ 			(type ?o2)
+ 		)
+ 		(wetness::assign ?o1
+ 			(??h
+ 				(wetness ?o1)
+ 			)
+ 		)
+ 	)
+ )
+)
+
+)

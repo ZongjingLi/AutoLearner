@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from Karanir.utils import EPS
+from karanir.utils import EPS
 
 class Measure(nn.Module):
     def __init__(self, config):

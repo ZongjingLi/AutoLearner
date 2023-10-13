@@ -1,4 +1,4 @@
-from Karanir import *
+from karanir import *
 from .perception import *
 from .knowledge import *
 from .physics import *

@@ -63,6 +63,13 @@ class SceneProgramExecutor(nn.Module):
                 self.get_concept_embedding(concept))
                 )
         return masks
+
+    def entail_prob(self, features, concept):
+        kwargs = {"end":[torch.ones(features.shape[0])],
+             "features":[features]}
+        q = self.parse("filter(scene(),{})".format(concept))
+        o = self(q, **kwargs)
+        return o["end"]
     
     def all_embeddings(self):
         return self.concept_vocab, [self.get_concept_embedding(emb) for emb in self.concept_vocab]

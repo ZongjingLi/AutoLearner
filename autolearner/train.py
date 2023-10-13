@@ -1,4 +1,4 @@
-import Karanir
+import karanir
 from datasets import *
 import time
 import datetime

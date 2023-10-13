@@ -1,6 +1,6 @@
-import Karanir
-from Karanir.dklearn import *
-from Karanir.dklearn.nn.cnn import ConvolutionUnits
+import karanir
+from karanir.dklearn import *
+from karanir.dklearn.nn.cnn import ConvolutionUnits
 
 class SceneNet(nn.Module):
     def __init__(self, config):
