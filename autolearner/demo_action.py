@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:24:24
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-13 13:56:47
+# @Last Modified time: 2023-10-14 00:38:31
 
 from config import *
 from model  import *
@@ -33,8 +33,7 @@ print(o["end"])
 red_feat = torch.tensor([[0.4, -0.4, EPS, EPS]])
 print(executor.entail_prob(red_feat,"red"))
 
-neuro_move = NeuroAction("move")
-print(neuro_move)
 
 neuro_planner = NeuroReasoner(config)
-print(neuro_planner)
+print(neuro_planner.neuro_actions["v1"].name)
+

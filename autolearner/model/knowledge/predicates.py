@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:07:56
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-13 13:24:39
+# @Last Modified time: 2023-10-13 14:04:48
 import torch
 import torch.nn as nn
 
@@ -43,6 +43,7 @@ class NeuroPredicate(nn.Module):
 class NeuroAction(nn.Module):
 	def __init__(self,name):
 		super().__init__()
+		self.name = name
 
 	@staticmethod
 	def parse_action(self,action_script):
