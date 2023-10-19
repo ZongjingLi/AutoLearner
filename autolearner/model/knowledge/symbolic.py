@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 from .abstract_program import AbstractProgram
-from utils import copy_dict,apply,EPS
+from karanir.utils import copy_dict,apply,EPS
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 inf = torch.tensor(int(1e8)).to(device)

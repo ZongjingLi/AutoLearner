@@ -5,6 +5,11 @@
 	robot item - object
 )
 
+(:feature
+	:parameters (?r - robot)
+	:output (vector[float32,3])
+)
+
 (:predicate
 	(image [return_type=vector[float32], input] ?o1 - item)
 )
@@ -15,14 +20,14 @@
 )
 
 (:action move-into
- :parameters (?o1 ?o2)
- :effects (
- 	and
- 	(pose::assign
+ 	:parameters (?o1 ?o2)
+ 	:effects (
+ 		and
+ 		(pose::assign
  		?o1
  		(??f (pose: ?o2))
- 	)
- 	(when
+ 		
+ 		(if
  		(??g
  			(type ?o1)
  			(type ?o2)
@@ -31,9 +36,21 @@
  			(??h
  				(wetness ?o1)
  			)
+ 			)
+ 			)
  		)
- 	)
- )
+	)
+)
+
+(:action lturn
+	:parameters (?o1)
+	:effect (
+		and
+		(assign::pose
+			?o1
+			(??f (pose ?o1))
+		)
+	)
 )
 
 )

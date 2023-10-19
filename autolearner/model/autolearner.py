@@ -11,6 +11,7 @@ class AutoLearner(nn.Module):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
         # [Knowledge]
+        self.executor = SceneProgramExecutor(config)
 
         # [Perception]
         self.perception = SceneNet(config)
@@ -18,6 +19,7 @@ class AutoLearner(nn.Module):
         # [Physics]
 
         # [Reasoning and Planning]
+        self.planner = NeuroReasoner(config)
     
     def forward(self, x):
         return x

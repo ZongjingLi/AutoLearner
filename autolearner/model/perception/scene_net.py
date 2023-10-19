@@ -9,6 +9,9 @@ class SceneNet(nn.Module):
         self.convs_backbone = ConvolutionUnits(config.channels,config.conv_dim, config.latent_dim)
 
     def forward(self, x):
+        """
+        perform object level segmentation using optical flow estimation.
+        """
         return x
 
     def store_parameters(self, path):

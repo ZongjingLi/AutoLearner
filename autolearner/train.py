@@ -1,5 +1,5 @@
 import karanir
-from datasets import *
+from .datasets import *
 import time
 import datetime
 from torch.utils.tensorboard import SummaryWriter

@@ -1,6 +1,6 @@
-from config import *
-from model import *
-from datasets import *
+from autolearner.config import *
+from autolearner.model import *
+from autolearner.datasets import *
 
 demoparser = argparse.ArgumentParser()
 demoparser.add_argument("--demo_name",          default = "knowledge")

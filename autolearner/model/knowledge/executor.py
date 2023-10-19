@@ -6,9 +6,9 @@ from torch.nn import functional as F
 
 from .embeddings import build_box_registry
 from .entailment import build_entailment
-from utils import freeze
-from utils.misc import *
-from utils import *
+from karanir.utils import freeze
+from karanir.utils.misc import *
+from karanir.utils import *
 
 class UnknownArgument(Exception):
     def __init__(self):super()

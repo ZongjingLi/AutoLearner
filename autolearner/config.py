@@ -1,7 +1,7 @@
 import argparse
 from karanir import *
 
-from model.knowledge.symbolic import *
+from .model.knowledge.symbolic import *
 translator = {"scene":Scene,"exist":Exist,"filter":Filter,"union":Union,"unique":Unique,"count":Count,
               "parents":Parents,"subtree":Subtree}
 
@@ -9,7 +9,7 @@ local = True
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-root_path = "/Users/melkor/Documents/GitHub/AutoLearner/AutoLearner" if local else "AutoLearner"
+root_path = "/Users/melkor/Documents/GitHub/AutoLearner/autoLearner" if local else "AutoLearner"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--device",                     default = device)

@@ -11,7 +11,7 @@ from abc import abstractmethod
 from collections import abc
 
 import torch
-from utils import *
+from karanir.utils import *
 
 class AbstractProgram:
     PROGRAM_REGISTRY = {}
