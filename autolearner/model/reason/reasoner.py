@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:43:08
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-20 05:26:59
+# @Last Modified time: 2023-10-20 05:49:07
 
 import torch
 import torch.nn as nn
@@ -205,6 +205,10 @@ class UniversalMap(nn.Module):
 def tensor_shape(seq):return [int(v) for v in seq[1:-1].split(",")[1:]]
 
 def make_by_types(name,input_types, output_type, type_specs):
+	"""
+	make the universal mapping that matches input_types and output_types
+	@name: the name of the predicate to use
+	"""
 	input_dims = [tensor_shape(type_specs[t]) for t in input_types if t in type_specs]
 	if output_type in type_specs:
 		output_type = type_specs[output_type]
@@ -213,9 +217,6 @@ def make_by_types(name,input_types, output_type, type_specs):
 	unknown_net = UniversalMap(name,input_dims, output_dim)
 
 	return unknown_net
-
-def infer_predicate_type():
-	return 
 
 def infer_io_types(sequence, name, ifo = True):
 	start_pos = sequence.index("??{}".format(name))

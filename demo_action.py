@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:24:24
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-20 05:26:59
+# @Last Modified time: 2023-10-20 05:47:04
 
 from autolearner.config import *
 from autolearner.model  import *
@@ -60,7 +60,6 @@ entities = [o1,o2]
 state = {"entities":entities}
 
 obs_state = {"name1":o1,"name2":o2}
-
 
 obs_state = neuro_planner.observe_predicates(obs_state)
 
