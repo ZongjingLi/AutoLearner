@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:24:24
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-21 00:39:36
+# @Last Modified time: 2023-10-21 00:45:06
 
 from autolearner.config import *
 from autolearner.model  import *
@@ -53,6 +53,7 @@ for comp in neuro_planner.neuro_components:pass;#print(comp)
 
 autolearner = AutoLearner(config)
 
+# Must at least include input predicate
 o1 = {"image":torch.randn(1,64,64,3)}
 o2 = {"image":torch.randn(1,64,64,3)}
 
