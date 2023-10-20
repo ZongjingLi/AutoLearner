@@ -6,18 +6,18 @@
 )
 
 (:derived
-	(object_feature return_type=[float32,64] ?o1)
-	(??f (image ?o1))
+	(object_feature return_type=[float32,64] ?u1)
+	(??f (image ?u1))
 )
 
 (:derived
-	(pos return_type=[float32,1] ?o1)
+	(pos return_type=[float32,2] ?o1)
 	(??f (object_feature ?o1))
 )
 
 (:derived
 	(left return_type=[float32,2] ?o1 ?o2)
-	(??f (object_feature ?o1 object_feature ?o2))
+	(??f (object_feature ?o1) (object_feature ?o2))
 )
 
 
@@ -38,7 +38,7 @@
 
 (:derived
 	(is-red return_type=[float32,1] ?o1)
-	( filter(?o1,red) )
+	( filter(o1,red) )
 )
 
 (:action turnleft
@@ -47,7 +47,14 @@
 		(?o1::exists ??f(?o2::pos))
 	:effect (
 		and
-		(assign::pos)
+		(is-yellow::assign
+			?o1
+			(??h (object_feature ?o2) )
+		)
+		(state::assign
+			?o1
+			(??g (object_feature ?o2) )
+		)
 	)
 )
 
@@ -55,9 +62,18 @@
 	:parameter (?o1 ?o2)
 	:effect (
 		and
+		(is-yellow::assign
+			?o1 
+			(??f (state ?o2))
+		)
+		and
 		(pos::assign
 			?o1
-			(??f (state ?o2))
+			(??g (state ?o2))
+		)
+		(state::assign
+			?o1 
+			(??h (left ?o2 ?o1) (state ?o2))
 		)
 	)
 )
@@ -67,7 +83,6 @@
 	:precond
 		(exists: ?o1)
 	:effect (
-		and
 		(pos::assign
 		?o1
 		(??f (state ?o2) (pos ?o1))

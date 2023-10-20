@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:43:08
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-20 05:49:07
+# @Last Modified time: 2023-10-20 12:38:47
 
 import torch
 import torch.nn as nn
@@ -73,11 +73,10 @@ class NeuroReasoner(nn.Module):
 			
 			if comp[1:9] == ":derived":
 				name, params, effect, types = NeuroAction.parse_derived(comp)
-				#print(inbraket(comp[1:-1])[0].split(" ")[1].split())
+
 				output_type = inbraket(comp[1:-1])[0].split(" ")[1].split("=")[1]
 				neuro_comp_names, infer_types = find_all_unknown(effect,False)
-				#print(infer_types)
-				#input_types = infer_types[0]["input"]
+
 				specs[name] = output_type
 		return specs
 
@@ -88,8 +87,24 @@ class NeuroReasoner(nn.Module):
 				for obj_name in state:
 					deriv_effect = self.derived[deriv_name]
 
+
+					# [Generate the Derived Script]
+					formal_params = self.derived_signatures[deriv_name]["params"]
+
+					knowledge_based = not "?" in deriv_effect
 					# [Calculate the Effect Value]
-					state[obj_name][deriv_name] = deriv_effect
+					if knowledge_based:
+						return
+					else:
+						eff_predicate = QuasiSymbolic.parse(deriv_effect)
+						eff_args = {}
+						eff_args["global_name"] = deriv_name
+						for fparam in formal_params:
+							eff_args[fparam] = state[obj_name]
+						eff_output = eff_predicate(eff_args,self)
+						state[obj_name][deriv_name] = eff_output
+					
+					
 			
 			# [Binary Predicates]
 			if len(self.derived_signatures[deriv_name]["params"]) == 2:
@@ -117,7 +132,7 @@ class NeuroReasoner(nn.Module):
 				# make the local neuro component of action
 				for i,local_name in enumerate(neuro_comp_names):
 					comp_name = name + "-" + local_name
-					substitute = make_by_types(name,infer_types[i]["input"],infer_types[i]["output"],self.type_specs)
+					substitute = make_by_types(comp_name,infer_types[i]["input"],infer_types[i]["output"],self.type_specs)
 					self.neuro_components.append(substitute)
 
 				self.neuro_actions[name] = NeuroAction(name,paras,precond,effect)
@@ -137,7 +152,7 @@ class NeuroReasoner(nn.Module):
 				# make the local neuro component accordingly
 				for i,local_name in enumerate(neuro_comp_names):
 					comp_name = name + "-" + local_name
-					substitute = make_by_types(name,infer_types[i]["input"],self.type_specs[name],self.type_specs)
+					substitute = make_by_types(comp_name,infer_types[i]["input"],self.type_specs[name],self.type_specs)
 					self.neuro_components.append(substitute)
 
 				self.derived[name] = effect
@@ -156,17 +171,20 @@ class NeuroReasoner(nn.Module):
 		
 		entities = args["entities"]
 		for i,fname in enumerate(formal_names):kwargs[fname] = entities[i]
+		kwargs["entities"] = self.observe_predicates(kwargs)
 
 		# [Evaluate the Precondition]
 		if precond is not None:
 			precond_prob = 1.0
 		else: precond_prob = 1.0
 		kwargs["precond"] = precond_prob
+		kwargs["global_name"] = name
+
 
 		# [Perform Action on the Formal Parameters]
-		#q_effect = QuasiSymbolic.parse(effect)
-
-		return 
+		q_effect = QuasiSymbolic.parse(effect)
+		
+		return q_effect(kwargs,self)
 
 	def forward_reason(self, x):
 		return x
