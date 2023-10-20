@@ -12,6 +12,10 @@ class SceneNet(nn.Module):
         """
         perform object level segmentation using optical flow estimation.
         """
+        x = x.permute(0,3,1,2)
+        conv_features = self.convs_backbone(x)
+        print(x.shape)
+        print(conv_features.shape)
         return x
 
     def store_parameters(self, path):
