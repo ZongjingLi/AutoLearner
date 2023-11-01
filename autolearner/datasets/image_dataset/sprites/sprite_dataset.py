@@ -38,13 +38,13 @@ class SpriteWithQuestions(Dataset):
 
 
 class SpriteData(Dataset):
-    def __init__(self,split = "train",resolution = (128,128)):
+    def __init__(self,config, split = "train",resolution = (128,128)):
         super().__init__()
         
         assert split in ["train","val","test"]
         self.split = split
         self.resolution = resolution
-        self.root_dir = "/Users/melkor/Documents/datasets/sprites"
+        self.root_dir = "{}/sprites".format(config.dataset_root)
         self.files = os.listdir(os.path.join(self.root_dir,split))
         self.img_transform = transforms.Compose(
             [transforms.ToTensor()]
@@ -58,3 +58,23 @@ class SpriteData(Dataset):
         image = self.img_transform(image).permute([1,2,0])
         sample = {"image":image}
         return sample
+
+class DynamicSpriteData(Dataset):
+    def __init__(self, config, split = "train", resolution = (128,128)):
+        super().__init__()
+        self.config = config
+
+        assert split in ["train","val","test"]
+        self.split = split
+        self.resolution = resolution
+        self.root_dir = "{}/dynamic_sprites".format(config.dataset_root)
+        self.files = os.listdir(os.path.join(self.root_dir,split))
+        self.img_transform = transforms.Compose(
+            [transforms.ToTensor()])
+
+    def __len__(self): return len(self.files) - 1
+
+    def __getitem__(self, index):
+        path = self.files[index]
+        vidarr = np.load(os.path.join(self.root_dir,self.split,"{}.npy".format(index)))
+        return {"video":vidarr}

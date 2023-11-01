@@ -1,3 +1,6 @@
-cube
+triangle
+square
+house
+ship
+blue
 red
-green

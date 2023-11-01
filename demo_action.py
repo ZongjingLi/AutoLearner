@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:24:24
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-21 00:45:06
+# @Last Modified time: 2023-10-25 02:20:27
 
 from autolearner.config import *
 from autolearner.model  import *
@@ -39,15 +39,15 @@ neuro_planner = NeuroReasoner(config)
 
 for pred in neuro_planner.predicates:
 	pass
-	#print(pred, neuro_planner.predicates[pred])
+	print(pred, neuro_planner.predicates[pred])
 
 for deriv in neuro_planner.derived:
 	pass
-	#print(deriv, neuro_planner.derived[deriv], neuro_planner.derived_signatures[deriv]["params"])
+	print(deriv, neuro_planner.derived[deriv], neuro_planner.derived_signatures[deriv]["params"])
 
 for name in neuro_planner.neuro_actions:
 	pass
-	#print(neuro_planner.neuro_actions[name])
+	print(neuro_planner.neuro_actions[name])
 
 for comp in neuro_planner.neuro_components:pass;#print(comp)
 
@@ -74,13 +74,13 @@ for i,fn in enumerate(state["entities"]):
 	print("fn:{}".format(i))
 	print("is-yellow:",fn["is-yellow"].detach().numpy())
 	print("pos:",fn["pos"].detach().numpy())
-
+print("")
 neuro_planner.apply("move-in",state,executor) 
 for i,fn in enumerate(state["entities"]):
 	print("fn:{}".format(i))
 	print("is-yellow:",fn["is-yellow"].detach().numpy())
 	print("pos:",fn["pos"].detach().numpy())
-
+print("")
 neuro_planner.apply("turnleft",state,executor) 
 for i,fn in enumerate(state["entities"]):
 	print("fn:{}".format(i))

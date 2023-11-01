@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-13 13:43:08
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-20 12:38:47
+# @Last Modified time: 2023-10-25 02:20:09
 
 import torch
 import torch.nn as nn
@@ -141,7 +141,7 @@ class NeuroReasoner(nn.Module):
 			if comp[1:11] == ":predicate":
 				# infer the predicate type
 				name, params, types= NeuroAction.parse_predicate(comp)
-				self.predicates[name] = 0
+				self.predicates[name] = params
 				self.predicate_signatures[name] = {"params":params,"types":types}
 			
 			if comp[1:9] == ":derived":
@@ -160,18 +160,23 @@ class NeuroReasoner(nn.Module):
 		return True
 
 	def apply(self, name, args, executor):
-		# Make applicable arguments
+		# [Choose Action] Make applicable arguments
 		action = self.neuro_actions[name]
 		precond = action.precond
 		effect = action.effect
 		formal_names = [c for c in action.params]
+		print(effect)
 
 		kwargs = {}
 		# [Get the formal Parameters of the Action]
 		
 		entities = args["entities"]
 		for i,fname in enumerate(formal_names):kwargs[fname] = entities[i]
-		kwargs["entities"] = self.observe_predicates(kwargs)
+		
+		# [Check Entites have All Predicates]
+		observed = False
+		if not observed:
+			kwargs["entities"] = self.observe_predicates(kwargs)
 
 		# [Evaluate the Precondition]
 		if precond is not None:

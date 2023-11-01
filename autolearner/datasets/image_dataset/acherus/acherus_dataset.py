@@ -13,17 +13,29 @@ from torchvision import transforms
 from PIL import Image
 from karanir.utils import *
 
-class AcherusImageDataset(Dataset):
-    def __init__(self,split = "train",path = "",resolution = (128,128)):
+class AcherusBase(Dataset):
+    def __init__(self, config, split = "train", path = "", resolution = (128,128)):
         super().__init__()
         self.resolution = resolution
-        self.path = "/Users/melkor/Documents/datasets/acherus/train/{}.jpg"
-        #self.images = sorted(glob(self.path))
+        self.root_path = config.dataset_root
         self.img_transform = transforms.Compose(
             [transforms.ToTensor()]
         )
-        self.file_names = os.listdir("/Users/melkor/Documents/datasets/acherus/{}/".format(split,split))
+        self.file_names = os.listdir("{}/Acherus".format(self.root_path))
 
+    def __len__(self):
+        return 399
+
+    def __getitem__(self, index):
+        image = Image.open(self.path.format(index))
+        image = image.convert("RGB").resize(self.resolution)
+        image = self.img_transform(image)
+        sample = {"image":image.permute(1,2,0)}
+        return sample
+
+class AcherusImageDataset(AcherusBase):
+    def __init__(self,split = "train",path = "",resolution = (128,128)):
+        super().__init__(config, split, path, resolution)
 
     def __len__(self):
         return 399

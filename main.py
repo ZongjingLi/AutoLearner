@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2023-10-05 07:09:56
 # @Last Modified by:   Melkor
-# @Last Modified time: 2023-10-12 09:52:22
+# @Last Modified time: 2023-10-22 12:48:48
 
 import torch
 import torch.nn as nn
@@ -18,7 +18,7 @@ from autolearner.datasets import SpriteWithQuestions
 from torch.utils.data import DataLoader
 from karanir.utils.tokens import *
 
-data = SpriteWithQuestions(split = "trainn")
+data = SpriteWithQuestions(split = "train")
 loader = DataLoader(data, batch_size = 1, shuffle = True)
 
 for sample in loader:
