@@ -17,6 +17,7 @@ class AutoLearner(nn.Module):
         self.perception = SceneNet(config)
 
         # [Physics]
+        self.physics_model = NeuroParticleFilter(config)
 
         # [Reasoning and Planning]
         self.planner = NeuroReasoner(config)
