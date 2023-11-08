@@ -9,3 +9,7 @@ class TrajectoryDiffuser(nn.Module):
     """
     def __init__(self, action_dim, latent_dim, beta = 0.1):
         super().__init__()
+        self.diffuser = nn.Linear(action_dim, latent_dim)
+
+    def forward(self, x):
+        return x
