@@ -13,7 +13,7 @@ class SpriteWithQuestions(Dataset):
         self.split = split
         self.resolution = resolution
         self.root_dir = "/Users/melkor/Documents/datasets/sprites"
-        self.questions = load_json(os.path.join(self.root_dir,"sprite_qa.json"))
+        self.questions = load_json(os.path.join(self.root_dir,"{}_sprite_qa.json".format(split)))
         self.img_transform = transforms.Compose(
             [transforms.ToTensor()]
         )
@@ -26,8 +26,8 @@ class SpriteWithQuestions(Dataset):
         image = self.img_transform(image).permute([1,2,0]) 
 
         #question = [q["question"] for q in self.questions[index]]
-        programs  = [p["program"] for p in self.questions[index]]
-        answers   = [a["answer"] for a in self.questions[index]]
+        programs  = [p for p in self.questions[index]["program"]]
+        answers   = [a for a in self.questions[index]["answer"]]
 
         questions = []
         for i in range(len(programs)):
