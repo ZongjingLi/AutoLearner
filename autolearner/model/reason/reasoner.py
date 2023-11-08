@@ -195,6 +195,10 @@ class NeuroReasoner(nn.Module):
 		return x
 
 class UniversalMap(nn.Module):
+	"""
+	The Univseral Neuro Map that is takes several input channels [d] and output channel [o] as config
+	to create the whole mapping.
+	"""
 	def __init__(self, name, input_dims, output_dim, fc_dim = 64, conv_dim = 64):
 		super().__init__()
 		self.name = name
