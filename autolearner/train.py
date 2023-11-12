@@ -4,6 +4,9 @@ import time
 import datetime
 from torch.utils.tensorboard import SummaryWriter
 
+def train_nerf(train_model, config, args):
+    return 
+
 def train_segment(train_model, config, args, query = False):
     # [Create the Dataloader]
     if args.dataset == "Hearth":
@@ -27,7 +30,7 @@ def train_segment(train_model, config, args, query = False):
         train_dataset = AcherusDataset("train")
 
     if args.training_mode == "query":
-        Karanir.utils.tensor.freeze(train_model.perception)
+        karanir.utils.tensor.freeze(train_model.perception)
 
     dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = args.shuffle); B = args.batch_size
 
