@@ -1,1 +1,1 @@
-[{"program": ["exist(filter(scene(),Circle))"], "answer": ["True"]}, {"program": ["exist(filter(scene(),Cube))"], "answer": ["True"]}, {"program": ["exist(filter(scene(),Diamond))"], "answer": ["False"]}, {"program": ["count(scene())"], "answer": ["2"]}]
+[{"program": ["exist(filter(scene(),Circle))"], "answer": ["True"]}, {"program": ["exist(filter(scene(),Cube))"], "answer": ["True"]}, {"program": ["exist(filter(scene(),Diamond))"], "answer": ["True"]}, {"program": ["count(scene())"], "answer": ["2.0"]}]

@@ -1,7 +1,7 @@
 import argparse
 from karanir import *
 
-from .model.knowledge.symbolic import *
+from model.knowledge.symbolic import *
 translator = {"scene":Scene,"exist":Exist,"filter":Filter,"union":Union,"unique":Unique,"count":Count,
               "parents":Parents,"subtree":Subtree}
 

@@ -10,7 +10,7 @@ import torch.nn as nn
 import numpy as np
 
 from karanir.dklearn.nn import FCBlock, ConvolutionUnits
-from autolearner.model.knowledge.predicates import *
+from model.knowledge.predicates import *
 from .quasi_symbolic import *
 
 class ConvEncoder(nn.Module):

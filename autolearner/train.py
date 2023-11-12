@@ -1,10 +1,30 @@
 import karanir
-from .datasets import *
+from datasets import *
 import time
 import datetime
 from torch.utils.tensorboard import SummaryWriter
 
 def train_nerf(train_model, config, args):
+    train_dataset = 0
+
+    # [setup the optimizer and lr schedulr]
+    if args.optimizer == "Adam":
+        optimizer = torch.optim.Adam(train_model.parameters(), lr = args.lr)
+    if args.optimizer == "RMSprop":
+        optimizer = torch.optim.RMSprop(train_model.parameters(), lr = args.lr)
+    
+    # [start the training process recording]
+    itrs = 0
+    start = time.time()
+    logging_root = "./tf-logs"
+    ckpt_dir     = os.path.join(logging_root, 'checkpoints')
+    events_dir   = os.path.join(logging_root, 'events')
+    if not os.path.exists(ckpt_dir): os.makedirs(ckpt_dir)
+    if not os.path.exists(events_dir): os.makedirs(events_dir)
+    writer = SummaryWriter(events_dir)
+
+    for epoch in range(args.epochs):
+        pass
     return 
 
 def train_segment(train_model, config, args, query = False):
@@ -58,7 +78,7 @@ def train_segment(train_model, config, args, query = False):
             # [Compute Optical Flow Segment]
 
             # [Afffinity Coercion]
-            outputs = model(sample)
+            outputs = train_model(sample)
 
             # [Calculate the Working Loss]
             working_loss = 0.0
@@ -69,7 +89,7 @@ def train_segment(train_model, config, args, query = False):
             if itrs % config.checkpoint_itrs:
                 pass
 
-def train_scenelearner(model, args, config):
+def train_scenelearner(train_model, args, config, query = False):
     # [Create the Dataloader]
     if args.dataset == "Hearth":
         train_dataset = HearthDataset("train", resolution = config.resolution)
@@ -92,7 +112,7 @@ def train_scenelearner(model, args, config):
         train_dataset = AcherusDataset("train")
 
     if args.training_mode == "query":
-        Karanir.utils.tensor.freeze(train_model.perception)
+        karanir.utils.tensor.freeze(train_model.perception)
 
     dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = args.shuffle); B = args.batch_size
 

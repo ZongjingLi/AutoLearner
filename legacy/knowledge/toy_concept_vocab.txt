@@ -1,8 +1,0 @@
-red
-blue
-house
-boat
-tower
-rectangle
-square
-triangle

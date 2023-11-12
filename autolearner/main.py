@@ -50,3 +50,8 @@ if args.mode == "scenelearner":
     if args.dataset in ["Sprites","Acherus","Toys","PTR","Hearth","Battlecode"]:
         print("start the image domain training session.")
         train_scenelearner(model, config, args)
+
+if args.mode == "nerf":
+    if args.dataset in ["PAC"]:
+        print("start the training of the nerf.")
+        train_nerf(model, config,args)

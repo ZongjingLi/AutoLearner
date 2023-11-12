@@ -1,1 +1,0 @@
-from .partnet_dataset import *

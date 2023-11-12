@@ -5,7 +5,7 @@
 # @Last Modified time: 2023-10-21 00:40:49
 import torch
 import torch.nn as nn
-from autolearner.model.knowledge.predicates import *
+from model.knowledge.predicates import *
 
 def segindex(seq,chars):
 	min_idx = len(seq) + 1
