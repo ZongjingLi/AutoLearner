@@ -136,8 +136,14 @@ def train_scenelearner(train_model, args, config, query = False):
 
 def train_physics(model, config, args):
     # suppose this model already have a good enough perception moduloe
-    for epoch in range(config.epochs):
-        pass
+    train_dataset = PhysicaDataset(split = "train")
+
+    optimizer = torch.optim.Adam(model.parameters(), lr = args.lr)
+
+    for epoch in range(args.epochs):
+        for i in range(len(train_dataset)):
+            sample = train_dataset[i]
+    print("Physics Training of {} is Done!".format(args.name))
 
 def train_reasoning(model, config, args):
     pass

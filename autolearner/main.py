@@ -38,6 +38,7 @@ argparser.add_argument("--checkpoint_dir",          default = None)
 args = argparser.parse_args()
 args.batch_size = int(args.batch_size)
 args.lr = float(args.lr)
+args.epochs = int(args.epochs)
 
 model = AutoLearner(config)
 
@@ -54,4 +55,9 @@ if args.mode == "scenelearner":
 if args.mode == "nerf":
     if args.dataset in ["PAC"]:
         print("start the training of the nerf.")
-        train_nerf(model, config,args)
+        train_nerf(model, config, args)
+
+if args.mode == "physics":
+    if args.dataset in ["Physica"]:
+        print("start the physics model training")
+        train_physics(model, config, args)
