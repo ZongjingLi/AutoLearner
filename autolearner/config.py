@@ -9,7 +9,7 @@ local = True
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-root_path = "/Users/melkor/Documents/GitHub/AutoLearner/autoLearner" if local else "AutoLearner"
+root_path = "/Users/melkor/Documents/GitHub/AutoLearner/autoLearner" if local else "AutoLearner/autolearner"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--device",                     default = device)
@@ -32,7 +32,7 @@ parser.add_argument("--translator",                 default = translator)
 
 # [Perception]
 parser.add_argument("--channels",                   default = 3)
-parser.add_argument("--resolution",                 default = [128,128])
+parser.add_argument("--resolution",                 default = [64,64])
 parser.add_argument("--conv_dim",                   default = 64 + 32)
 parser.add_argument("--perception_size",            default = 5)
 parser.add_argument("--spatial_dim",                default = 2)

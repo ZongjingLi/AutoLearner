@@ -22,6 +22,10 @@ class AutoLearner(nn.Module):
         # [Reasoning and Planning]
         self.planner = NeuroReasoner(config)
     
+    def compute_segments(self, sample_images, segments = None):
+        outputs = self.perception(sample_images, segments)
+        return outputs
+    
     def forward(self, x):
         return x
 

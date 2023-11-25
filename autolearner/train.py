@@ -4,6 +4,8 @@ import time
 import datetime
 from torch.utils.tensorboard import SummaryWriter
 
+import sys
+
 def train_nerf(train_model, config, args):
     train_dataset = 0
 
@@ -27,7 +29,10 @@ def train_nerf(train_model, config, args):
         pass
     return 
 
-def train_segment(train_model, config, args, query = False):
+def train_segment(train_model, config, args):
+    using_optical_flow = False
+    # TODO: remove all the query related components
+    query = False
     # [Create the Dataloader]
     if args.dataset == "Hearth":
         train_dataset = HearthDataset("train", resolution = config.resolution)
@@ -45,7 +50,7 @@ def train_segment(train_model, config, args, query = False):
         if query:
             train_dataset = SpriteWithQuestions("train", resolution = config.resolution)
         else:
-            train_dataset = SpriteData("train", resolution = config.resolution)
+            train_dataset = SpriteData(config, "train", resolution = config.resolution)
     if args.dataset == "Acherus":
         train_dataset = AcherusDataset("train")
 
@@ -76,18 +81,24 @@ def train_segment(train_model, config, args, query = False):
             itrs += 1
 
             # [Compute Optical Flow Segment]
+            if using_optical_flow:
+                segments = None
+            else: segments = None
 
             # [Afffinity Coercion]
-            outputs = train_model(sample)
+            outputs = train_model.compute_segments(sample["image"], segments)
 
             # [Calculate the Working Loss]
             working_loss = 0.0
+            for key in outputs["losses"]:
+                working_loss += outputs["losses"][key]
 
             # [Log the Epoch Loss]
             epoch_loss += working_loss
 
-            if itrs % config.checkpoint_itrs:
-                pass
+            if itrs % args.checkpoint_itrs:
+                torch.save(train_model.state_dict(), "{}/checkpoints/model{}.ckpt".format(config.root,epoch))
+            sys.stdout.write("\repoch:{} working_loss:{} [{}/{}]".format(epoch, working_loss,1+itrs%len(dataloader),len(dataloader)))
 
 def train_scenelearner(train_model, args, config, query = False):
     # [Create the Dataloader]
@@ -107,7 +118,7 @@ def train_scenelearner(train_model, args, config, query = False):
         if query:
             train_dataset = SpriteWithQuestions("train", resolution = config.resolution)
         else:
-            train_dataset = SpriteData("train", resolution = config.resolution)
+            train_dataset = SpriteData(config, "train", resolution = config.resolution)
     if args.dataset == "Acherus":
         train_dataset = AcherusDataset("train")
 
